@@ -11,8 +11,9 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#define RESET   "\033[0m"
-#define GREEN   "\033[34m"
+#define RESET "\033[0m"
+#define BLUE "\033[34m"
+#define BOLDWHITE   "\033[1m\033[31m"
 
 namespace lexer {
 enum TOKEN_TYPE {
@@ -33,7 +34,10 @@ static const std::unordered_set<std::string>
 static const std::unordered_set<std::string> LiteralLogicSet({"true", "false"});
 
 static const std::unordered_set<std::string> OperatorSet({"*", "/", "+", "-",
-                                                          ">", "<", "==", "="});
+                                                          "!", ">", "<", "="});
+
+static const std::unordered_set<std::string> ExpandOperatorSet({">=", "<=",
+                                                                "==", "!="});
 
 static const std::unordered_set<std::string> SeparatorSet({"{", "}", "(", ")",
                                                            ";"});

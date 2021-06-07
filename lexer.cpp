@@ -44,7 +44,6 @@ void GetToken() {
 
     if (last_char != EOF)
       GetToken();
-    CurrentToken = Comment;
 
   } else if (last_char == '\"' || last_char == '\'') {
     // literal string
@@ -55,67 +54,66 @@ void GetToken() {
     } while (last_char != EOF && last_char != '\"' && last_char != '\'');
     CurrentToken = LiteralString;
 
-  } else if (last_char == EOF) {
-    CurrentToken = TOKEN_EOF;
-  } else if (ispunct(last_char)){
-    TokenStr.clear();
-    do {
-      TokenStr += last_char;
-      last_char = (char )getchar();
-    } while (ispunct(last_char) && last_char != ';');
-
+  } else if (ispunct(last_char)) {
+    TokenStr = last_char;
     CurrentToken = OperatorSet.find(TokenStr) != OperatorSet.end()
                        ? Operator
                        : CurrentToken;
     CurrentToken = SeparatorSet.find(TokenStr) != SeparatorSet.end()
                        ? Separator
                        : CurrentToken;
+
+    last_char = (char)getchar();
+    std::string tmp_token_str = TokenStr + last_char;
+    if (ExpandOperatorSet.find(tmp_token_str) != ExpandOperatorSet.end()) {
+      TokenStr = tmp_token_str;
+      last_char = (char)getchar();
+    }
+
+  } else if (last_char == EOF) {
+    CurrentToken = TOKEN_EOF;
+
+  } else {
+    std::cerr << "\nUnknown char: " << last_char << std::endl;
+    assert(CurrentToken != NotDefine);
   }
 
-	try {
-		if (CurrentToken == NotDefine) {
-			std::cout << std::endl;
-			std::cerr << TokenStr << std::endl;
-			throw "Current token hasn't been defined!";
-		}
-	} catch (const char* msg) {
-  	std::cerr << msg << std::endl;
+  if (CurrentToken == NotDefine) {
+    std::cerr << "\nDo not support such token: " << TokenStr << std::endl;
   }
 }
 
 void LexerTester() {
-	GetToken();
-	std::cout << "[";
   while (CurrentToken != TOKEN_EOF) {
+    GetToken();
     switch (CurrentToken) {
     case KeyWord:
-      std::cout << "(KeyWord, " << GREEN << TokenStr << RESET << "), ";
+      std::cout << "(KeyWord, " << BLUE << TokenStr << RESET << "), ";
       break;
     case LiteralNum:
-      std::cout << "(LiteralNum, " << GREEN << NumberValue << RESET<< "), ";
+      std::cout << "(LiteralNum, " << BLUE << NumberValue << RESET << "), ";
       break;
     case LiteralLogic:
-      std::cout << "(LiteralLogic, " << GREEN << TokenStr << RESET<< "), ";
+      std::cout << "(LiteralLogic, " << BLUE << TokenStr << RESET << "), ";
       break;
     case LiteralString:
-      std::cout << "(LiteralString, " << GREEN << TokenStr << RESET<< "), ";
+      std::cout << "(LiteralString, " << BLUE << TokenStr << RESET << "), ";
       break;
     case Operator:
-      std::cout << "(Operator, " << GREEN << TokenStr << RESET<< "), ";
+      std::cout << "(Operator, " << BLUE << TokenStr << RESET << "), ";
       break;
     case Separator:
-      std::cout << "(Separator, " << GREEN << TokenStr << RESET<< "), ";
-      if (TokenStr == ";")
-        std::cout << "]" << std::endl;
-      break;
-    case Comment:
-      std::cout << "(Comment, " << GREEN << TokenStr << RESET<< "), ";
+      std::cout << "(Separator, " << BLUE << TokenStr << RESET << "), ";
       break;
     case Identifier:
-      std::cout << "(Identifier, " << GREEN << TokenStr << RESET<< "), ";
+      std::cout << "(Identifier, " << BLUE << TokenStr << RESET << "), ";
       break;
+    case NotDefine:
+      std::cout << "(No Defined Token)";
+      break;
+    case TOKEN_EOF:
+      return;
     }
-	  GetToken();
   }
 }
 }
