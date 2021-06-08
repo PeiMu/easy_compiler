@@ -23,11 +23,11 @@ enum TOKEN_TYPE {
   LiteralString,
   Operator,
   Separator,
-  Comment,
   Identifier,
   NotDefine,
   TOKEN_EOF,
 };
+
 static const std::unordered_set<std::string>
     KeyWordSet({"if", "else", "for", "while", "return", "def"});
 

@@ -52,6 +52,7 @@ void GetToken() {
       last_char = (char)getchar();
       TokenStr += last_char;
     } while (last_char != EOF && last_char != '\"' && last_char != '\'');
+    last_char = (char)getchar();
     CurrentToken = LiteralString;
 
   } else if (ispunct(last_char)) {
@@ -86,6 +87,7 @@ void GetToken() {
 void LexerTester() {
   while (CurrentToken != TOKEN_EOF) {
     GetToken();
+    std::cout << "tokenize to: ";
     switch (CurrentToken) {
     case KeyWord:
       std::cout << "(KeyWord, " << BLUE << TokenStr << RESET << "), ";
