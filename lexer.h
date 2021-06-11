@@ -13,7 +13,7 @@
 
 #define RESET "\033[0m"
 #define BLUE "\033[34m"
-#define BOLDWHITE   "\033[1m\033[31m"
+#define BOLDWHITE "\033[1m\033[31m"
 
 namespace lexer {
 enum TOKEN_TYPE {
@@ -29,7 +29,7 @@ enum TOKEN_TYPE {
 };
 
 static const std::unordered_set<std::string>
-    KeyWordSet({"if", "else", "for", "while", "return", "def"});
+    KeyWordSet({"if", "else", "for", "while", "return", "let", "def"});
 
 static const std::unordered_set<std::string> LiteralLogicSet({"true", "false"});
 
