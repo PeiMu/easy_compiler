@@ -3,4 +3,4 @@ project(easy_compiler)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(easy_compiler main.cpp lexer.cpp)
+add_executable(easy_compiler main.cpp lexer.cpp parser.cpp)
