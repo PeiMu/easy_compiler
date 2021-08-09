@@ -36,29 +36,17 @@ static const std::unordered_set<std::string> LiteralLogicSet({"true", "false"});
 static const std::unordered_set<std::string> OperatorSet({"*", "/", "+", "-",
                                                           "!", ">", "<", "="});
 
-static const std::unordered_set<std::string> ExpandOperatorSet({">=", "<=",
-                                                                "==", "!="});
+static const std::unordered_set<std::string>
+    ExpandOperatorSet({">=", "<=", "==", "!="});
 
 static const std::unordered_set<std::string> SeparatorSet({"{", "}", "(", ")",
                                                            ";"});
 
-static TOKEN_TYPE CurrentToken = NotDefine;
-static std::string TokenStr;
-static double NumberValue = 0.0;
-
-//// from C operator precedence: the lower the number, the higher the priority
-// static const std::unordered_map<std::string, int> BinaryOpPrecedence({{"*",
-// 3},
-//                                                         {"/", 3},
-//                                                         {"+", 4},
-//                                                         {"-", 4},
-//                                                         {">", 6},
-//                                                         {"<", 6},
-//                                                         {"==", 7},
-//                                                         {"=", 14}});
+TOKEN_TYPE CurrentToken = NotDefine;
+std::string TokenStr;
+double NumberValue = 0.0;
 
 void GetToken();
-void LexerTester();
-}
+} // namespace lexer
 
 #endif // EASY_COMPILER_LEXER_H

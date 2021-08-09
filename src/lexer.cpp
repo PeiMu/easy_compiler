@@ -36,7 +36,7 @@ void GetToken() {
     NumberValue = strtod(num_str.c_str(), nullptr);
     CurrentToken = LiteralNum;
 
-  } else if (last_char == '#') {
+  } else if (last_char == '#' || (last_char == '/' && (char)getchar() == '/')) {
     // comment until end of line
     do
       last_char = (char)getchar();
@@ -83,39 +83,4 @@ void GetToken() {
     std::cerr << "\nDo not support such token: " << TokenStr << std::endl;
   }
 }
-
-void LexerTester() {
-  while (CurrentToken != TOKEN_EOF) {
-    GetToken();
-    std::cout << "tokenize to: ";
-    switch (CurrentToken) {
-    case KeyWord:
-      std::cout << "(KeyWord, " << BLUE << TokenStr << RESET << "), ";
-      break;
-    case LiteralNum:
-      std::cout << "(LiteralNum, " << BLUE << NumberValue << RESET << "), ";
-      break;
-    case LiteralLogic:
-      std::cout << "(LiteralLogic, " << BLUE << TokenStr << RESET << "), ";
-      break;
-    case LiteralString:
-      std::cout << "(LiteralString, " << BLUE << TokenStr << RESET << "), ";
-      break;
-    case Operator:
-      std::cout << "(Operator, " << BLUE << TokenStr << RESET << "), ";
-      break;
-    case Separator:
-      std::cout << "(Separator, " << BLUE << TokenStr << RESET << "), ";
-      break;
-    case Identifier:
-      std::cout << "(Identifier, " << BLUE << TokenStr << RESET << "), ";
-      break;
-    case NotDefine:
-      std::cout << "(No Defined Token)";
-      break;
-    case TOKEN_EOF:
-      return;
-    }
-  }
-}
-}
+} // namespace lexer
