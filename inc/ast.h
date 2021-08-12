@@ -9,49 +9,49 @@
 #include <utility>
 #include <vector>
 
-class NodeAST {
+class NodeAst {
 public:
-  NodeAST() = default;
-  virtual ~NodeAST() = default;
+  NodeAst() = default;
+  virtual ~NodeAst() = default;
 };
 
-class ExprAST : public NodeAST {
+class ExprAst : public NodeAst {
 public:
-  ExprAST() = default;
-  ~ExprAST() override = default;
+  ExprAst() = default;
+  ~ExprAst() override = default;
 };
 
-class VarAST final : public ExprAST {
+class VarExpr final : public ExprAst {
 public:
-  explicit VarAST(std::string variable_value)
+  explicit VarExpr(std::string variable_value)
       : variable_value_(std::move(variable_value)) {}
-  ~VarAST() override = default;
+  ~VarExpr() override = default;
 
   const std::string variable_value_;
 };
 
-class ConstAST final : public ExprAST {
+class ConstExpr final : public ExprAst {
 public:
-  explicit ConstAST(double constant_value) : constant_value_(constant_value) {}
-  ~ConstAST() override = default;
+  explicit ConstExpr(double constant_value) : constant_value_(constant_value) {}
+  ~ConstExpr() override = default;
 
   double constant_value_;
 };
 
-class UnaryAST final : public ExprAST {
+class UnaryExpr final : public ExprAst {
 public:
   enum UnaryOP {
     Not = 1,
   };
-  explicit UnaryAST(UnaryOP op, std::unique_ptr<ExprAST> operand)
+  explicit UnaryExpr(UnaryOP op, std::unique_ptr<ExprAst> operand)
       : operator_(op), operands_(std::move(operand)) {}
-  ~UnaryAST() override = default;
+  ~UnaryExpr() override = default;
 
   const UnaryOP operator_;
-  const std::unique_ptr<ExprAST> operands_;
+  const std::unique_ptr<ExprAst> operands_;
 };
 
-class BinaryAST final : public ExprAST {
+class BinaryExpr final : public ExprAst {
 public:
   enum BinaryOP {
     Add = 1,
@@ -59,17 +59,17 @@ public:
     Mul,
     Div,
   };
-  explicit BinaryAST(BinaryOP op, std::unique_ptr<ExprAST> lhs,
-                     std::unique_ptr<ExprAST> rhs)
+  explicit BinaryExpr(BinaryOP op, std::unique_ptr<ExprAst> lhs,
+                      std::unique_ptr<ExprAst> rhs)
       : operator_(op), lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
-  ~BinaryAST() override = default;
+  ~BinaryExpr() override = default;
 
   const BinaryOP operator_;
-  const std::unique_ptr<const ExprAST> lhs_;
-  const std::unique_ptr<const ExprAST> rhs_;
+  const std::unique_ptr<const ExprAst> lhs_;
+  const std::unique_ptr<const ExprAst> rhs_;
 };
 
-class LogicalAST final : public ExprAST {
+class LogicalExpr final : public ExprAst {
 public:
   enum LogicalOP {
     Equal = 1,
@@ -79,100 +79,100 @@ public:
     Less,
     LessEqual,
   };
-  explicit LogicalAST(LogicalOP op, std::unique_ptr<ExprAST> lhs,
-                      std::unique_ptr<ExprAST> rhs)
+  explicit LogicalExpr(LogicalOP op, std::unique_ptr<ExprAst> lhs,
+                       std::unique_ptr<ExprAst> rhs)
       : operator_(op), lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
-  ~LogicalAST() override = default;
+  ~LogicalExpr() override = default;
 
   const LogicalOP operator_;
-  const std::unique_ptr<ExprAST> lhs_;
-  const std::unique_ptr<ExprAST> rhs_;
+  const std::unique_ptr<ExprAst> lhs_;
+  const std::unique_ptr<ExprAst> rhs_;
 };
 
-class StmtAST : public NodeAST {
+class StmtAst : public NodeAst {
 public:
-  StmtAST() = default;
-  ~StmtAST() override = default;
+  StmtAst() = default;
+  ~StmtAst() override = default;
 };
 
-class LetAST final : public StmtAST {
+class LetStmt final : public StmtAst {
 public:
-  explicit LetAST(std::unique_ptr<VarAST> lhs, std::unique_ptr<ExprAST> rhs)
+  explicit LetStmt(std::unique_ptr<VarExpr> lhs, std::unique_ptr<ExprAst> rhs)
       : lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
-  ~LetAST() override = default;
+  ~LetStmt() override = default;
 
-  const std::unique_ptr<VarAST> lhs_;
-  const std::unique_ptr<ExprAST> rhs_;
+  const std::unique_ptr<VarExpr> lhs_;
+  const std::unique_ptr<ExprAst> rhs_;
 };
 
-class IfAST final : public StmtAST {
+class IfStmt final : public StmtAst {
 public:
-  explicit IfAST(std::unique_ptr<ExprAST> condition,
-                 std::vector<std::unique_ptr<StmtAST>> then_body,
-                 std::vector<std::unique_ptr<StmtAST>> else_body)
+  explicit IfStmt(std::unique_ptr<ExprAst> condition,
+                  std::vector<std::unique_ptr<StmtAst>> then_body,
+                  std::vector<std::unique_ptr<StmtAst>> else_body)
       : condition_(std::move(condition)), then_body_(std::move(then_body)),
         else_body_(std::move(else_body)) {}
-  ~IfAST() override = default;
+  ~IfStmt() override = default;
 
-  const std::unique_ptr<ExprAST> condition_;
-  const std::vector<std::unique_ptr<StmtAST>> then_body_;
-  const std::vector<std::unique_ptr<StmtAST>> else_body_;
+  const std::unique_ptr<ExprAst> condition_;
+  const std::vector<std::unique_ptr<StmtAst>> then_body_;
+  const std::vector<std::unique_ptr<StmtAst>> else_body_;
 };
 
-class ForAST final : public StmtAST {
+class ForStmt final : public StmtAst {
 public:
-  explicit ForAST(std::unique_ptr<ExprAST> condition,
-                  std::vector<std::unique_ptr<StmtAST>> for_body)
+  explicit ForStmt(std::unique_ptr<ExprAst> condition,
+                   std::vector<std::unique_ptr<StmtAst>> for_body)
       : condition_(std::move(condition)), for_body_(std::move(for_body)) {}
-  ~ForAST() override = default;
+  ~ForStmt() override = default;
 
-  const std::unique_ptr<ExprAST> condition_;
-  const std::vector<std::unique_ptr<StmtAST>> for_body_;
+  const std::unique_ptr<ExprAst> condition_;
+  const std::vector<std::unique_ptr<StmtAst>> for_body_;
 };
 
-class BlockAST final : public StmtAST {
+class BlockStmt final : public StmtAst {
 public:
-  explicit BlockAST(std::vector<std::unique_ptr<StmtAST>> head_body,
-                    std::vector<std::unique_ptr<StmtAST>> tail_body)
+  explicit BlockStmt(std::unique_ptr<StmtAst> head_body,
+                     std::unique_ptr<StmtAst> tail_body)
       : head_body_(std::move(head_body)), tail_body_(std::move(tail_body)) {}
-  ~BlockAST() override = default;
+  ~BlockStmt() override = default;
 
-  const std::vector<std::unique_ptr<StmtAST>> head_body_;
-  const std::vector<std::unique_ptr<StmtAST>> tail_body_;
+  const std::unique_ptr<StmtAst> head_body_;
+  const std::unique_ptr<StmtAst> tail_body_;
 };
 
-class AttrAST final : public StmtAST {
+class AttrStmt final : public StmtAst {
 public:
-  explicit AttrAST(std::string attribute) : attribute_(std::move(attribute)) {}
-  ~AttrAST() override = default;
+  explicit AttrStmt(std::string attribute) : attribute_(std::move(attribute)) {}
+  ~AttrStmt() override = default;
 
   const std::string attribute_;
 };
 
-class FuncAST final : public StmtAST {
+class FuncStmt final : public StmtAst {
 public:
-  explicit FuncAST(std::string name, std::unique_ptr<ExprAST> result,
-                   std::vector<std::unique_ptr<ExprAST>> params,
-                   std::vector<std::unique_ptr<StmtAST>> body)
+  explicit FuncStmt(std::string name, std::unique_ptr<ExprAst> result,
+                    std::vector<std::unique_ptr<ExprAst>> params,
+                    std::unique_ptr<BlockStmt> body)
       : name_(std::move(name)), result_(std::move(result)),
         params_(std::move(params)), body_(std::move(body)) {}
-  ~FuncAST() override = default;
+  ~FuncStmt() override = default;
 
   const std::string name_;
-  const std::unique_ptr<ExprAST> result_;
-  const std::vector<std::unique_ptr<ExprAST>> params_;
-  const std::vector<std::unique_ptr<StmtAST>> body_;
+  const std::unique_ptr<ExprAst> result_;
+  const std::vector<std::unique_ptr<ExprAst>> params_;
+  const std::unique_ptr<BlockStmt> body_;
 };
 
-class CallAST final : public ExprAST {
+class CallExpr final : public ExprAst {
 public:
-  explicit CallAST(std::unique_ptr<FuncAST> callee,
-                   std::vector<std::unique_ptr<ExprAST>> param)
+  explicit CallExpr(std::unique_ptr<FuncStmt> callee,
+                    std::vector<std::unique_ptr<ExprAst>> param)
       : callee_(std::move(callee)), params_(std::move(param)) {}
-  ~CallAST() override = default;
+  ~CallExpr() override = default;
 
-  const std::unique_ptr<FuncAST> callee_;
-  const std::vector<std::unique_ptr<ExprAST>> params_;
+  const std::unique_ptr<FuncStmt> callee_;
+  const std::vector<std::unique_ptr<ExprAst>> params_;
 };
 
 #endif // EASY_COMPILER_AST_H

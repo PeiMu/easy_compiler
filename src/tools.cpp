@@ -4,7 +4,7 @@
 
 #include "tools.h"
 
-std::unique_ptr<ExprAST> LogError(const char *message) {
+std::unique_ptr<ExprAst> LogError(const char *message) {
   fprintf(stderr, "LogError: %s", message);
   return nullptr;
 }

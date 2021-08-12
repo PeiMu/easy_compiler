@@ -4,6 +4,10 @@
 
 #include "lexer.h"
 namespace lexer {
+TOKEN_TYPE CurrentToken = NotDefine;
+std::string TokenStr;
+double NumberValue = 0.0;
+
 void GetToken() {
   static char last_char = ' ';
   CurrentToken = NotDefine;
@@ -13,14 +17,11 @@ void GetToken() {
     last_char = (char)getchar();
 
   if (isalpha(last_char)) {
-    // including: literal logic, key word, and identifier
+    // including: key word, and identifier
     TokenStr = last_char;
     while (isalnum((last_char = (char)getchar())))
       TokenStr += last_char;
 
-    CurrentToken = LiteralLogicSet.find(TokenStr) != LiteralLogicSet.end()
-                       ? LiteralLogic
-                       : CurrentToken;
     CurrentToken =
         KeyWordSet.find(TokenStr) != KeyWordSet.end() ? KeyWord : CurrentToken;
     CurrentToken = CurrentToken == NotDefine ? Identifier : CurrentToken;
@@ -46,12 +47,15 @@ void GetToken() {
       GetToken();
 
   } else if (last_char == '\"' || last_char == '\'') {
+    auto literal_str_symbol = last_char;
     // literal string
     TokenStr = last_char;
     do {
       last_char = (char)getchar();
       TokenStr += last_char;
-    } while (last_char != EOF && last_char != '\"' && last_char != '\'');
+    } while (last_char != EOF && last_char != literal_str_symbol);
+    if (literal_str_symbol == '\'')
+      assert(TokenStr.size() <= 3); // the symbol '\'' can only contain a char
     last_char = (char)getchar();
     CurrentToken = LiteralString;
 

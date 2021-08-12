@@ -10,6 +10,6 @@
 #include <memory>
 #include <tuple>
 
-std::unique_ptr<ExprAST> LogError(const char *message);
+std::unique_ptr<ExprAst> LogError(const char *message);
 
 #endif // EASY_COMPILER_TOOLS_H

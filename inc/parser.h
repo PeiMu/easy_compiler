@@ -13,7 +13,10 @@
 #include <memory>
 #include <unordered_map>
 
-std::unordered_map<std::string, std::unique_ptr<FuncAST>> func_definitons;
+std::unique_ptr<ExprAst>
+ParsePrimaryExpr(std::unique_ptr<ExprAst> lhs = nullptr);
+
+std::unordered_map<std::string, std::unique_ptr<FuncStmt>> func_definitons;
 
 // from C operator precedence: the lower the number, the higher the priority
 static const std::unordered_map<std::string, int>

@@ -15,9 +15,6 @@ void LexerTester() {
     case LiteralNum:
       std::cout << "(LiteralNum, " << NumberValue << "), ";
       break;
-    case LiteralLogic:
-      std::cout << "(LiteralLogic, " << TokenStr << "), ";
-      break;
     case LiteralString:
       std::cout << "(LiteralString, " << TokenStr << "), ";
       break;

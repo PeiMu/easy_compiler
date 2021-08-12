@@ -19,7 +19,6 @@ namespace lexer {
 enum TOKEN_TYPE {
   KeyWord = 1,
   LiteralNum,
-  LiteralLogic,
   LiteralString,
   Operator,
   Separator,
@@ -28,23 +27,21 @@ enum TOKEN_TYPE {
   TOKEN_EOF,
 };
 
-static const std::unordered_set<std::string>
-    KeyWordSet({"if", "else", "for", "while", "return", "let", "def"});
-
-static const std::unordered_set<std::string> LiteralLogicSet({"true", "false"});
+static const std::unordered_set<std::string> KeyWordSet(
+    {"if", "else", "for", "while", "return", "let", "def", "true", "false"});
 
 static const std::unordered_set<std::string> OperatorSet({"*", "/", "+", "-",
                                                           "!", ">", "<", "="});
 
-static const std::unordered_set<std::string>
-    ExpandOperatorSet({">=", "<=", "==", "!="});
+static const std::unordered_set<std::string> ExpandOperatorSet({">=", "<=",
+                                                                "==", "!="});
 
 static const std::unordered_set<std::string> SeparatorSet({"{", "}", "(", ")",
-                                                           ";"});
+                                                           "[", "]", ";"});
 
-TOKEN_TYPE CurrentToken = NotDefine;
-std::string TokenStr;
-double NumberValue = 0.0;
+extern TOKEN_TYPE CurrentToken;
+extern std::string TokenStr;
+extern double NumberValue;
 
 void GetToken();
 } // namespace lexer
