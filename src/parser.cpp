@@ -4,10 +4,26 @@
 
 #include "parser.h"
 
+namespace parser {
+std::unordered_map<std::string, std::unique_ptr<FuncStmt>> func_definitons;
+
+// from C operator precedence: the lower the number, the higher the priority
+static const std::unordered_map<std::string, int>
+    BinaryOpPrecedence({{"*", 3},
+                        {"/", 3},
+                        {"+", 4},
+                        {"-", 4},
+                        {">", 6},
+                        {"<", 6},
+                        {"==", 7},
+                        {"=", 14}});
+
+static inline std::unique_ptr<ExprAst> ParsePrimaryExpr();
+
 /*
  * parse number to const expr
  */
-std::unique_ptr<ExprAst> ParseConstExpr() {
+static inline std::unique_ptr<ExprAst> ParseConstExpr() {
   auto result = std::make_unique<ConstExpr>(lexer::NumberValue);
   lexer::GetToken(); // consume number
   return std::move(result);
@@ -16,7 +32,7 @@ std::unique_ptr<ExprAst> ParseConstExpr() {
 /*
  * parse '(' some_expr ')'
  */
-std::unique_ptr<ExprAst> ParseSeparatorExpr() {
+static inline std::unique_ptr<ExprAst> ParseSeparatorExpr() {
   lexer::GetToken(); // eat '('
   auto expr = ParsePrimaryExpr();
   if (nullptr == expr)
@@ -32,7 +48,7 @@ std::unique_ptr<ExprAst> ParseSeparatorExpr() {
 /*
  * parse identifier or function name
  */
-std::unique_ptr<ExprAst> ParseIdentifierExpr() {
+static inline std::unique_ptr<ExprAst> ParseIdentifierExpr() {
   std::string id_name = lexer::TokenStr;
 
   lexer::GetToken(); // eat identifier
@@ -67,28 +83,22 @@ std::unique_ptr<ExprAst> ParseIdentifierExpr() {
   return std::make_unique<CallExpr>(std::move(id_func), std::move(args));
 }
 
-std::unique_ptr<ExprAst> ParseLiteralExpr() {
+static inline std::unique_ptr<ExprAst> ParseLiteralExpr() {
   std::string id_name = lexer::TokenStr;
   lexer::GetToken(); // eat literal string
 
   return std::make_unique<VarExpr>(id_name);
 }
 
-std::unique_ptr<ExprAst> ParseOperatorExpr() {
+static inline std::unique_ptr<ExprAst> ParseOperatorExpr() {
   return std::unique_ptr<ExprAst>();
-}
-
-std::unique_ptr<StmtAst> ParseKeyWordExpr() {
-  std::string id_name = lexer::TokenStr;
-  assert(lexer::KeyWordSet.count(id_name) > 0);
-  return std::unique_ptr<StmtAst>();
 }
 
 /*
  * parse primary
  * to choose which kind of Expr or Stmt to parse
  */
-std::unique_ptr<ExprAst> ParsePrimaryExpr(std::unique_ptr<ExprAst> lhs) {
+static inline std::unique_ptr<ExprAst> ParsePrimaryExpr() {
   switch (lexer::CurrentToken) {
   case lexer::LiteralString:
     return ParseLiteralExpr();
@@ -101,62 +111,90 @@ std::unique_ptr<ExprAst> ParsePrimaryExpr(std::unique_ptr<ExprAst> lhs) {
   case lexer::Identifier:
     return ParseIdentifierExpr();
   default:
-    LogError("No implementation yet.");
+    LogError("Token Error!");
   }
 }
 
-static constexpr unsigned int str2int(const char *str, int h = 0) {
+static inline constexpr unsigned int str2int(const char *str, int h = 0) {
   return !str[h] ? 5381 : (str2int(str, h + 1) * 33) ^ str[h];
 }
 
-static std::unique_ptr<StmtAst> ParseIfStmt() {
+static inline std::unique_ptr<StmtAst> ParseIfStmt() {
   return std::unique_ptr<StmtAst>();
 }
 
-static std::unique_ptr<StmtAst> ParseForStmt() {
+static inline std::unique_ptr<StmtAst> ParseForStmt() {
   return std::unique_ptr<StmtAst>();
 }
 
-static std::unique_ptr<StmtAst> ParseWhileStmt() {
+static inline std::unique_ptr<StmtAst> ParseWhileStmt() {
   return std::unique_ptr<StmtAst>();
 }
 
-static std::unique_ptr<StmtAst> ParseLetStmt() {
+static inline std::unique_ptr<StmtAst> ParseLetStmt() {
   return std::unique_ptr<StmtAst>();
 }
 
-static std::unique_ptr<StmtAst> ParseDefStmt() {
+static inline std::unique_ptr<StmtAst> ParseDefStmt() {
   return std::unique_ptr<StmtAst>();
 }
 
-std::unique_ptr<ExprAst> ParseFuncBody() {
-  std::vector<std::unique_ptr<StmtAst>> func_body;
+static inline std::tuple<std::unique_ptr<StmtAst>, std::unique_ptr<ExprAst>>
+ParseFuncBody() {
+  std::vector<std::unique_ptr<StmtAst>> func_body_vec;
+  std::unique_ptr<ExprAst> return_val = nullptr;
   while (lexer::CurrentToken != lexer::TOKEN_EOF) {
+    // we must meet keyword or function call at first
+    if (lexer::CurrentToken != lexer::KeyWord) {
+      assert(lexer::CurrentToken == lexer::Identifier);
+      auto func_call = ParseIdentifierExpr();
+      assert(typeid(func_call).name() ==
+             typeid(std::unique_ptr<CallExpr>).name());
+      // construct an anonymous let stmt to include CallExpr.
+      auto anonymous_let =
+          std::make_unique<LetStmt>(nullptr, std::move(func_call));
+      func_body_vec.emplace_back(std::move(anonymous_let));
+    }
     lexer::GetToken();
     switch (str2int(lexer::TokenStr.c_str())) {
     case str2int("if"):
-      func_body.emplace_back(ParseIfStmt());
+      func_body_vec.emplace_back(ParseIfStmt());
       break;
     case str2int("for"):
-      func_body.emplace_back(ParseForStmt());
+      func_body_vec.emplace_back(ParseForStmt());
       break;
     case str2int("while"):
-      func_body.emplace_back(ParseWhileStmt());
+      func_body_vec.emplace_back(ParseWhileStmt());
       break;
     case str2int("let"):
-      func_body.emplace_back(ParseLetStmt());
+      func_body_vec.emplace_back(ParseLetStmt());
       break;
     case str2int("def"):
-      func_body.emplace_back(ParseDefStmt());
+      func_body_vec.emplace_back(ParseDefStmt());
       break;
     case str2int("return"):
+      lexer::GetToken();
+      return_val = ParsePrimaryExpr();
       break;
     }
   }
-  auto lhs = ParsePrimaryExpr();
-  if (nullptr == lhs) {
-    return nullptr;
+
+  auto func_body =
+      std::make_unique<BlockStmt>(std::move(func_body_vec.back()), nullptr);
+  for (auto it = func_body_vec.rbegin() + 1; it != func_body_vec.rend(); it++) {
+    auto tmp_link_node =
+        std::make_unique<BlockStmt>(std::move(*it), std::move(func_body));
+    func_body = std::move(tmp_link_node);
   }
 
-  return nullptr;
+  return std::make_tuple(std::move(func_body), std::move(return_val));
+}
+
+void ParserDriver() {
+  // sometimes, we might regard the source code as a big function body
+  std::unique_ptr<StmtAst> stmt_block;
+  std::unique_ptr<ExprAst> null_ret;
+  std::tie(stmt_block, null_ret) = ParseFuncBody();
+  assert(null_ret == nullptr);
+}
 }
