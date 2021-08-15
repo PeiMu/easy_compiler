@@ -5,7 +5,7 @@
 #include "parser.h"
 
 namespace parser {
-std::unordered_map<std::string, std::unique_ptr<FuncStmt>> func_definitons;
+std::unordered_map<std::string, std::unique_ptr<FuncStmt>> func_definitions;
 
 // from C operator precedence: the lower the number, the higher the priority
 static const std::unordered_map<std::string, int>
@@ -19,6 +19,7 @@ static const std::unordered_map<std::string, int>
                         {"=", 14}});
 
 static inline std::unique_ptr<ExprAst> ParsePrimaryExpr();
+static inline std::unique_ptr<LetStmt> ParseLetStmt();
 
 /*
  * parse number to const expr
@@ -32,14 +33,14 @@ static inline std::unique_ptr<ExprAst> ParseConstExpr() {
 /*
  * parse '(' some_expr ')'
  */
-static inline std::unique_ptr<ExprAst> ParseSeparatorExpr() {
+static inline std::unique_ptr<ExprAst> ParseBracketsExpr() {
   lexer::GetToken(); // eat '('
   auto expr = ParsePrimaryExpr();
   if (nullptr == expr)
     return nullptr;
 
   if (lexer::TokenStr != ")")
-    return LogError("expexted ')'");
+    return LogError("expected ')'");
 
   lexer::GetToken(); // eat ')'
   return expr;
@@ -57,8 +58,8 @@ static inline std::unique_ptr<ExprAst> ParseIdentifierExpr() {
     return std::make_unique<VarExpr>(id_name);
 
   // function
-  auto iter = func_definitons.find(id_name);
-  if (iter == func_definitons.end()) {
+  auto iter = func_definitions.find(id_name);
+  if (iter == func_definitions.end()) {
     char err[] = "No such function: ";
     LogError(strcat(err, id_name.c_str()));
   }
@@ -107,11 +108,12 @@ static inline std::unique_ptr<ExprAst> ParsePrimaryExpr() {
   case lexer::Operator:
     return ParseOperatorExpr();
   case lexer::Separator:
-    return ParseSeparatorExpr();
+    return ParseBracketsExpr();
   case lexer::Identifier:
     return ParseIdentifierExpr();
   default:
     LogError("Token Error!");
+    return nullptr;
   }
 }
 
@@ -123,7 +125,29 @@ static inline std::unique_ptr<StmtAst> ParseIfStmt() {
   return std::unique_ptr<StmtAst>();
 }
 
+/**
+ * @brief only support format like:
+ * for (def i = 0; i < N; i++) {...},
+ * or: for (i = 0; i < N; i++) {...}, if i is already defined in the scope,
+ * or: for (i; i < N; i++) {...}, if i is already defined in the scope
+ * @return ForStmt
+ */
 static inline std::unique_ptr<StmtAst> ParseForStmt() {
+  std::unordered_map<std::string, std::unique_ptr<VarExpr>> scoped_var;
+  // firstly, parse the for head
+  lexer::GetToken(); // eat the keyword: "for"
+  assert(lexer::CurrentToken == lexer::Separator && lexer::TokenStr == "(");
+  lexer::GetToken(); // eat the '('
+
+  std::unique_ptr<VarExpr> iter_var, init, extent, stride;
+  if (lexer::CurrentToken == lexer::KeyWord && lexer::TokenStr == "def") {
+    auto init_stmt = ParseLetStmt();
+    assert(scoped_var.count(init_stmt->lhs_->variable_value_) == 0);
+    scoped_var.insert(std::make_pair(init_stmt->lhs_->variable_value_,
+                                     std::move(init_stmt->lhs_)));
+    iter_var = std::move(init_stmt->lhs_);
+  }
+
   return std::unique_ptr<StmtAst>();
 }
 
@@ -131,8 +155,23 @@ static inline std::unique_ptr<StmtAst> ParseWhileStmt() {
   return std::unique_ptr<StmtAst>();
 }
 
-static inline std::unique_ptr<StmtAst> ParseLetStmt() {
-  return std::unique_ptr<StmtAst>();
+static inline std::unique_ptr<LetStmt> ParseLetStmt() {
+  // firstly, get the value before '=' of the let statement
+  lexer::GetToken();
+  assert(lexer::CurrentToken == lexer::Identifier);
+  auto value = ParseIdentifierExpr();
+  // do not support reassign a function
+  assert(typeid(value).name() == typeid(std::unique_ptr<VarExpr>).name());
+  std::unique_ptr<VarExpr> new_value = ptr_cast<VarExpr>(std::move(value));
+  assert(value == nullptr && new_value != nullptr);
+
+  // secondly, check the "=" and eat it
+  assert(lexer::CurrentToken == lexer::Operator && lexer::TokenStr == "=");
+  lexer::GetToken(); // eat "="
+
+  // lastly, parse the rest part: elements on the right hand ot the "="
+  auto expr = ParsePrimaryExpr();
+  return std::make_unique<LetStmt>(std::move(new_value), std::move(expr));
 }
 
 static inline std::unique_ptr<StmtAst> ParseDefStmt() {
@@ -144,18 +183,22 @@ ParseFuncBody() {
   std::vector<std::unique_ptr<StmtAst>> func_body_vec;
   std::unique_ptr<ExprAst> return_val = nullptr;
   while (lexer::CurrentToken != lexer::TOKEN_EOF) {
+    // get the first token
+    lexer::GetToken();
+
     // we must meet keyword or function call at first
     if (lexer::CurrentToken != lexer::KeyWord) {
       assert(lexer::CurrentToken == lexer::Identifier);
       auto func_call = ParseIdentifierExpr();
       assert(typeid(func_call).name() ==
              typeid(std::unique_ptr<CallExpr>).name());
+
       // construct an anonymous let stmt to include CallExpr.
       auto anonymous_let =
           std::make_unique<LetStmt>(nullptr, std::move(func_call));
       func_body_vec.emplace_back(std::move(anonymous_let));
     }
-    lexer::GetToken();
+
     switch (str2int(lexer::TokenStr.c_str())) {
     case str2int("if"):
       func_body_vec.emplace_back(ParseIfStmt());
@@ -197,4 +240,4 @@ void ParserDriver() {
   std::tie(stmt_block, null_ret) = ParseFuncBody();
   assert(null_ret == nullptr);
 }
-}
+} // namespace parser

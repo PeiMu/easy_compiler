@@ -8,6 +8,10 @@ file(GLOB EASY_COMPILER_SRC
         main.cpp
         src/*.cpp)
 
+set(CXX_FLAGS
+        -Wall
+        -Werror)
+
 # easy_compiler include
 include_directories(inc)
 

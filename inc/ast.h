@@ -101,8 +101,19 @@ public:
       : lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
   ~LetStmt() override = default;
 
-  const std::unique_ptr<VarExpr> lhs_;
-  const std::unique_ptr<ExprAst> rhs_;
+  std::unique_ptr<VarExpr> lhs_;
+  std::unique_ptr<ExprAst> rhs_;
+};
+
+class BlockStmt final : public StmtAst {
+public:
+  explicit BlockStmt(std::unique_ptr<StmtAst> head_body,
+                     std::unique_ptr<StmtAst> tail_body)
+      : head_body_(std::move(head_body)), tail_body_(std::move(tail_body)) {}
+  ~BlockStmt() override = default;
+
+  const std::unique_ptr<StmtAst> head_body_;
+  const std::unique_ptr<StmtAst> tail_body_;
 };
 
 class IfStmt final : public StmtAst {
@@ -121,24 +132,30 @@ public:
 
 class ForStmt final : public StmtAst {
 public:
-  explicit ForStmt(std::unique_ptr<ExprAst> condition,
-                   std::vector<std::unique_ptr<StmtAst>> for_body)
-      : condition_(std::move(condition)), for_body_(std::move(for_body)) {}
+  explicit ForStmt(std::unique_ptr<VarExpr> iter_var,
+                   std::unique_ptr<VarExpr> init,
+                   std::unique_ptr<VarExpr> extent,
+                   std::unique_ptr<VarExpr> stride,
+                   std::unique_ptr<BlockStmt> for_body)
+      : iter_var_(std::move(iter_var)), init_(std::move(init)),
+        extent_(std::move(extent)), stride_(std::move(stride)),
+        for_body_(std::move(for_body)) {}
+
+  explicit ForStmt(std::unique_ptr<VarExpr> iter_var,
+                   std::unique_ptr<VarExpr> init,
+                   std::unique_ptr<VarExpr> extent,
+                   std::unique_ptr<BlockStmt> for_body)
+      : iter_var_(std::move(iter_var)), init_(std::move(init)),
+        extent_(std::move(extent)), for_body_(std::move(for_body)),
+        stride_(std::make_unique<VarExpr>("1")) {}
+
   ~ForStmt() override = default;
 
-  const std::unique_ptr<ExprAst> condition_;
-  const std::vector<std::unique_ptr<StmtAst>> for_body_;
-};
-
-class BlockStmt final : public StmtAst {
-public:
-  explicit BlockStmt(std::unique_ptr<StmtAst> head_body,
-                     std::unique_ptr<StmtAst> tail_body)
-      : head_body_(std::move(head_body)), tail_body_(std::move(tail_body)) {}
-  ~BlockStmt() override = default;
-
-  const std::unique_ptr<StmtAst> head_body_;
-  const std::unique_ptr<StmtAst> tail_body_;
+  const std::unique_ptr<VarExpr> iter_var_;
+  const std::unique_ptr<VarExpr> init_;
+  const std::unique_ptr<VarExpr> extent_;
+  const std::unique_ptr<VarExpr> stride_;
+  const std::unique_ptr<BlockStmt> for_body_;
 };
 
 class AttrStmt final : public StmtAst {

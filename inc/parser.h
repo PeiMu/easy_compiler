@@ -12,6 +12,7 @@
 #include <iostream>
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace parser {
 void ParserDriver();
