@@ -161,7 +161,7 @@ static inline std::unique_ptr<LetStmt> ParseLetStmt() {
   assert(lexer::CurrentToken == lexer::Identifier);
   auto value = ParseIdentifierExpr();
   // do not support reassign a function
-  assert(typeid(value).name() == typeid(std::unique_ptr<VarExpr>).name());
+//  assert(typeid(value).name() == typeid(std::unique_ptr<VarExpr>).name());
   std::unique_ptr<VarExpr> new_value = ptr_cast<VarExpr>(std::move(value));
   assert(value == nullptr && new_value != nullptr);
 

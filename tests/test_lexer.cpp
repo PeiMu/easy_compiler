@@ -35,9 +35,15 @@ void LexerTester() {
     }
   }
 }
+} // namespace lexer
 
-int main(int argc, char **argv) {
-  LexerTester();
+void test_func() {
+	std::cout << "test_func" << std::endl;
+}
+
+int main() {
+  std::cout << "in test_lexer" << std::endl;
+	test_func();
+//  lexer::LexerTester();
   return 0;
 }
-} // namespace lexer
