@@ -1,29 +1,31 @@
 # easy_compiler
 
-“easy_compiler”是一个为了练习编译相关技术而开发的简单编译器，目前支持：
-* 词法分析
+This is a toy exercise for practising compilation techniques.
 
-## 编译方法
+Current support:
+* Lexical Analysis
+
+## Get Started
 ``` bash
 mkdir build && cd build
 cmake ..
 make -j
 ```
 
-## 测试与示例
-待补充
+## Test Cases
+Todo
 
-## 特性
-### 前端语言特性
-此编译器的前端语言（即编译器的输入语言）特性包括：
-1. 类型系统用户**不需要感知**，在编译器内部分为：数字（浮点型）和字符串两种。
-2. 变量通过关键字"let"定义，**不可二次赋值**。如：let x = 10;或者lex str = "hi";
-3. 变量的生命周期通过符号"{"和"}""限定，**离开生存期后立即释放**，即不允许变量的生命周期跨过"}"。
-4. 函数通过关键字"def"定义，**函数入参和返回值不指定参数类型**，因此**不支持函数重载**等与函数参数类型相关的特性。
+## Characteristic
+### Front-end Language
+
+1. **No need** to concern the type systems, e.g. it only has two types, numbers (floating-point) and strings.
+2. Define a variable by the `let` keyword, which cannot be assigned twice, like functional language. E.g. `let x = 10`, `let str = "hi"`.
+3. the lifetime of a variable is defined by `{` and `}`. **Release immediately after leaving the lifetime**, that is, the life cycle of the variable is not allowed to span `}`. 
+4. Functions are defined by the `def` keyword. **Function parameters and return values do not specify parameter types**, so **function overloading** and other features related to function parameter types are not supported.
 5. ……
 
-### 编译优化特性
-暂无编译优化模块
+### Optimization
+Todo
 
-## 开发文档
-待补充
+## Docs
+Todo
